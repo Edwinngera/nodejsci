@@ -1,44 +1,33 @@
-name: cicd pipeline deploy to prod
-# Define the trigger for the pipeline
+name: Deploy to EC2
+
 on:
   push:
     branches:
       - main
 
-# Define the jobs to be run in the pipeline
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
-    # Define the steps to be run in the job
     steps:
-      # Checkout the code from the repository
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install dependencies
       - name: Install dependencies
-        run: npm install
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
 
-      # Build the application
-      - name: Build application
-        run: npm run build
+      - name: Configure AWS credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region us-east-1
 
-      # Deploy the application to the EC2 instance
-      - name: Deploy to EC2 instance
-        uses: appleboy/scp-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          source: 'dist/*'
-          target: '/var/www/myapp/'
+      - name: Copy files to EC2 instance
+        run: |
+          scp -i ${{ secrets.EC2_PRIVATE_KEY }} -r ./ ec2-user@${{ secrets.EC2_PUBLIC_IP }}:/home/ec2-user/app
 
-      # Restart the application on the EC2 instance
-      - name: Restart application
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.EC2_HOST }}
-          username: ${{ secrets.EC2_USERNAME }}
-          key: ${{ secrets.EC2_PRIVATE_KEY }}
-          script: 'sudo systemctl restart myapp'
+      - name: Start Node.js application
+        run: |
+          ssh -i ${{ secrets.EC2_PRIVATE_KEY }} ec2-user@${{ secrets.EC2_PUBLIC_IP }} "cd /home/ec2-user/app && npm install && npm start"
