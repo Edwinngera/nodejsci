@@ -26,8 +26,11 @@ jobs:
 
       - name: Copy files to EC2 instance
         run: |
-          scp -i ${{ secrets.EC2_PRIVATE_KEY }} -r ./ ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/app
+          if ! scp -i ${{ secrets.EC2_PRIVATE_KEY }} -r ./ ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/app; then
+            echo "SCP transfer failed"
+            exit 1
+          fi
 
       - name: Start Node.js application
         run: |
-          ssh -i ${{ secrets.EC2_PRIVATE_KEY }} ubuntu@${{ secrets.EC2_PUBLIC_IP }} "cd /home/ubuntu/app && npm install && npm start"
+          if ! ssh -i ${{ secrets.EC2_PRIVATE_KEY }} ubuntu@${{ secrets.EC2_PUBLIC_IP }} "cd /home/ubuntu/app && npm install
