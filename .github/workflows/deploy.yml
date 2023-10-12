@@ -1,0 +1,44 @@
+name: cicd pipeline deploy to prod
+# Define the trigger for the pipeline
+on:
+  push:
+    branches:
+      - main
+
+# Define the jobs to be run in the pipeline
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    # Define the steps to be run in the job
+    steps:
+      # Checkout the code from the repository
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Build the application
+      - name: Build application
+        run: npm run build
+
+      # Deploy the application to the EC2 instance
+      - name: Deploy to EC2 instance
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          source: 'dist/*'
+          target: '/var/www/myapp/'
+
+      # Restart the application on the EC2 instance
+      - name: Restart application
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: 'sudo systemctl restart myapp'
