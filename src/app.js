@@ -7,6 +7,10 @@ app.get("/test", (_req, res) => {
   res.status(200).send("Hello world");
 });
 
+app.get("/test2", (_req, res) => {
+  res.status(200).send("Hello world");
+});
+
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
