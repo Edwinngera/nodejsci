@@ -24,6 +24,17 @@ jobs:
           aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws configure set default.region us-east-1
 
+      - name: Deploy to prod server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            cd /home/ubuntu/
+            npm install
+        
+
       - name: Copy files to EC2 instance
         run: |
           scp -i ${{ secrets.EC2_PRIVATE_KEY }} -r ./ ubuntu@${{ secrets.EC2_PUBLIC_IP }}:/home/ubuntu/app
