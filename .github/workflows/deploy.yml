@@ -49,10 +49,10 @@ jobs:
             fi
             
             # Build the Docker image for your application
-            docker build -t nodejsci-app .
+            sudo docker build -t nodejsci-app .
             
             # Optionally, stop any running container for the same application to avoid port conflicts
-            docker stop $(docker ps -q --filter "ancestor=nodejsci-app") || true
+            sudo docker stop $(docker ps -q --filter "ancestor=nodejsci-app") || true
             
             # Run the Docker container
-            docker run -d -p 3000:3000 nodejsci-app
+            sudo docker run -d -p 3000:3000 nodejsci-app
