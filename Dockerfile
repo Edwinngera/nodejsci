@@ -16,5 +16,5 @@ COPY . .
 # Specify the port that the container should listen on at runtime
 EXPOSE 3000
 
-# Define the command to run the application
+# Define the command to run the application #
 CMD [ "npm", "start" ]
