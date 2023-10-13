@@ -1,0 +1,55 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y awscli
+
+      - name: Configure AWS credentials
+        run: |
+          aws configure set aws_access_key_id ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws configure set aws_secret_access_key ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws configure set default.region us-east-1
+
+      - name: Deploy to prod server
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.EC2_PUBLIC_IP }}
+          username: ubuntu
+          key: ${{ secrets.EC2_PRIVATE_KEY }}
+          script: |
+            whoami
+
+            cd /home/ubuntu/
+
+            # Fetch code from your Git repository (replace with your repository URL)
+            git clone https://github.com/Edwinngera/nodejsci.git
+
+            # Change to the repository directory
+            cd nodejsci
+
+            # Install Node.js (you may need to adjust the version)
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+            source ~/.nvm/nvm.sh
+            nvm install node
+
+            # Install application dependencies
+            npm install
+
+            # Start your Node.js application (replace with your actual start command)
+            npm start
+              
+  
